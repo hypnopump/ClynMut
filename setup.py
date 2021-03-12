@@ -1,9 +1,9 @@
 from setuptools import setup, find_packages
 
 setup(
-  name = 'alphafold2-pytorch',
+  name = 'clynmut',
   packages = find_packages(),
-  version = '0.0.50',
+  version = '0.0.0',
   license='MIT',
   description = 'ClynMut',
   author = 'Eric Alcaide',
@@ -20,7 +20,8 @@ setup(
     'torch>=1.6',
     'mdtraj>=1.8',
     'tqdm',
-    'alphafold2-pytorch'
+    'alphafold2-pytorch',
+    'geometric-vector-perceptron'
   ],
   setup_requires=[
     'pytest-runner',
