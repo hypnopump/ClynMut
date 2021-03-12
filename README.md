@@ -3,7 +3,7 @@ Sequence -----------+--> 3D_structure --> 3D_module --+                         
 |                   |                                 |                                      +--> ?
 |                   |                                 +--> Joint_module --> Hierarchical CLF +--> ?
 |                   |                                 |                                      +--> ?
-+-> NLP_embeddings -+---------> Embedding_module -----+                                      +--> ?
++-> NLP_embeddings -+-------> Embedding_module -------+                                      +--> ?
 ```
 
 ## ClynMut: Predicting the Clynical Relevance of Genome Mutations (wip)

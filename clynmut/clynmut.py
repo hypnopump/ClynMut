@@ -23,7 +23,7 @@ class MutPredict(torch.nn.Module):
             * info: any info required. 
             * verbose: int. verbosity level (0-silent, 1-minimal, 2-full)
         """
-        seq_embedds = self.embedd_batch(seqs) # (batch, embedd_size)
+        seq_embedds = embedd_batch(seqs) # (batch, embedd_size)
 
         pred = None
         return pred
