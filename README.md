@@ -13,7 +13,7 @@ To be a next-generation DL-based phenotype prediction from genome mutations. Wil
 
 Planned modules will likely be: 
 * Standard linear layers
-* 3D learning module (GVP, E(n)-equivariants, ...)
+* 3D learning module 
 * NLP embeddings
 * hierarchical classification (probably gaussian processes, but not sure yet. could do mlps for now as well)
 

@@ -1,11 +1,11 @@
 from setuptools import setup, find_packages
 
 setup(
-  name = 'clynmut',
+  name = 'ClynMut',
   packages = find_packages(),
   version = '0.0.0',
   license='MIT',
-  description = 'ClynMut',
+  description = 'ClynMut: Predicting the Clynical Relevance of Genome Mutations (wip)',
   author = 'Eric Alcaide',
   author_email = 'ericalcaide1@gmail.com',
   url = 'https://github.com/hypnopump/clynmut',
