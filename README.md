@@ -55,14 +55,14 @@ $ cd sidechainnet && pip install -e .
 
 +++
 
-* referenced in NLP-SNPPred : https://ieeexplore.ieee.org/document/9175781/
+* referenced in <a href="https://ieeexplore.ieee.org/document/9175781/">NLP-SNPPred</a>: 
     * training:
         * OncoKB : ()
     * validation: 
         * VariBench (three positive/pathogenic datasets: TP53, ClinVar and DoCM)
         * CIViC (expert-crowd-sourced knowledge base of variants in cancer. We only considered those examples that were labeled as "Likely Pathogenic”, “Poor Outcome” or “Negative”)
 
-* referenced in MutPred : https://pdfs.semanticscholar.org/b1c4/31717cf470634bfb5faca0c0ec9d3bd5ec66.pdf
+* referenced in <a href=https://pdfs.semanticscholar.org/b1c4/31717cf470634bfb5faca0c0ec9d3bd5ec66.pdf>MutPred</a>:
     * training:
         * Human Gene Mutation Database (HGMD)
         * Genome Aggregation Database (gnomAD)
@@ -74,7 +74,7 @@ $ cd sidechainnet && pip install -e .
 
 ## Citations:
 
-```
+```bibtex
 @article{pejaver_urresti_lugo-martinez_pagel_lin_nam_mort_cooper_sebat_iakoucheva et al._2020,
     title={Inferring the molecular and phenotypic impact of amino acid variants with MutPred2},
     volume={11},
@@ -85,7 +85,7 @@ $ cd sidechainnet && pip install -e .
     year={2020}
 ```
 
-```
+```bibtex
 @article{rehmat_farooq_kumar_ul hussain_naveed_2020, 
     title={Predicting the pathogenicity of protein coding mutations using Natural Language Processing},
     DOI={10.1109/embc44109.2020.9175781},
@@ -94,7 +94,7 @@ $ cd sidechainnet && pip install -e .
     year={2020}
 ```
 
-```
+```bibtex
 @article{pagel_antaki_lian_mort_cooper_sebat_iakoucheva_mooney_radivojac_2019,
     title={Pathogenicity and functional impact of non-frameshifting insertion/deletion variation in the human genome},
     volume={15},
