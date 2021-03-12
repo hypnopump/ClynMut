@@ -1,8 +1,15 @@
+```
+Sequence -----------+--> 3D_structure --> 3D_module --+                                      +--> ?
+|                   |                                 |                                      +--> ?
+|                   |                                 +--> Joint_module --> Hierarchical CLF +--> ?
+|                   |                                 |                                      +--> ?
++-> NLP_embeddings -+---------> Embedding_module -----+                                      +--> ?
+```
+
 ## ClynMut: Predicting the Clynical Relevance of Genome Mutations (wip)
 
 To be a next-generation DL-based phenotype prediction from genome mutations. Will use sota NLP and structural techniques. 
 
-## Plan:
 
 Planned modules will likely be: 
 * Standard linear layers
@@ -10,15 +17,8 @@ Planned modules will likely be:
 * NLP embeddings
 * hierarchical classification (probably gaussian processes, but not sure yet. could do mlps for now as well)
 
-The main idea is for the model to learn the prediction in an end-to-end fashion. A sample architecture:
+The main idea is for the model to learn the prediction in an end-to-end fashion. 
 
-```
-Sequence ------------+--> 3D_structure --> 3D_module --+                                      +--> ?
-|                    |                                 |                                      +--> ?
-|                    |                                 +--> Joint_module --> Hierarchical CLF +--> ?
-|                    |                                 |                                      +--> ?
-+--> NLP_embeddings -+-------------> Embedding_module -+                                      +--> ?
-```
 
 ## Important topics: 
 ### 3D structure learning
