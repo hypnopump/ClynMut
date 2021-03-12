@@ -1,17 +1,13 @@
-## Predicting the Clynical Relevance of Genome Mutations
+## ClynMut: Predicting the Clynical Relevance of Genome Mutations (wip)
 
 To be a next-generation DL-based phenotype prediction from genome mutations. Will use sota NLP and structural techniques. 
 
-### Planned approach:
-
-Planned input features will likely be: 
-* 3D structure
-* NLP embeddings
-
+## Plan:
 
 Planned modules will likely be: 
 * Standard linear layers
 * 3D learning module (GVP, E(n)-equivariants, ...)
+* NLP embeddings
 * hierarchical classification (probably gaussian processes, but not sure yet. could do mlps for now as well)
 
 The main idea is for the model to learn the prediction in an end-to-end fashion. A sample architecture:
@@ -24,17 +20,40 @@ Sequence ------------+--> 3D_structure --> 3D_module --+                        
 +--> NLP_embeddings -+-------------> Embedding_module -+                                      +--> ?
 ```
 
+## Important topics: 
+### 3D structure learning
 
-#### References:
+There are a couple architectures that can be used here. I've been working on 2 of them, which are likely to be used here: 
+* <a href="https://github.com/lucidrains/geometric-vector-perceptron">GVP</a>
+* <a href="https://github.com/lucidrains/egnn-pytorch">E(n)-gnn</a> 
 
-Projects with similar aims (year : name : paper_link : poster_link) ranked by paper results (interpreted by us): 
+### Hierarchical classification
 
-* 2017 : MutPred2 Preprint: https://doi.org/10.1038/s41467-020-19669-x : http://mutpred.mutdb.org/
-* 2019 : MutPred Paper : https://pdfs.semanticscholar.org/b1c4/31717cf470634bfb5faca0c0ec9d3bd5ec66.pdf
-* 2020 : NLP-SNPPred : https://ieeexplore.ieee.org/document/9175781/ : 
+I'm working on a prototype of a hierarchical classification small library that will support differentiablity.
 
+### Testing
+
+```bash
+$ python setup.py test
+```
 
 ### Datasets: 
+
+This package will use the awesome work by <a href="http://github.com/jonathanking">Jonathan King</a> at <a href="https://github.com/jonathanking/sidechainnet">this repository</a>.
+
+To install
+
+```bash
+$ pip install git+https://github.com/jonathanking/sidechainnet.git
+```
+Or
+
+```bash
+$ git clone https://github.com/jonathanking/sidechainnet.git
+$ cd sidechainnet && pip install -e .
+```
+
++++
 
 * referenced in NLP-SNPPred : https://ieeexplore.ieee.org/document/9175781/
     * training:
@@ -53,16 +72,36 @@ Projects with similar aims (year : name : paper_link : poster_link) ranked by pa
         * affected by autism pectrum disorder (ASD) from the REACH Project and the Simons Simplex Collection
 
 
-### Contribute
-Hey there! New ideas are welcome: open/close issues, fork the repo and share your code with a Pull Request.
-Clone this project to your computer:
- 
-`git clone https://github.com/EricAlcaide/ClynMut`
- 
-By participating in this project, you agree to abide by the thoughtbot [code of conduct](https://thoughtbot.com/open-source-code-of-conduct)
- 
-### Meta
- 
-* **Author's GitHub Profile**: [Eric Alcaide](https://github.com/hypnopump/)
-* **Twitter**: [@eric_alcaide](https://twitter.com/eric_alcaide)
-* **Email**: ericalcaide1@gmail.com
+## Citations:
+
+```
+@article{pejaver_urresti_lugo-martinez_pagel_lin_nam_mort_cooper_sebat_iakoucheva et al._2020,
+    title={Inferring the molecular and phenotypic impact of amino acid variants with MutPred2},
+    volume={11},
+    DOI={10.1038/s41467-020-19669-x},
+    number={1},
+    journal={Nature Communications},
+    author={Pejaver, Vikas and Urresti, Jorge and Lugo-Martinez, Jose and Pagel, Kymberleigh A. and Lin, Guan Ning and Nam, Hyun-Jun and Mort, Matthew and Cooper, David N. and Sebat, Jonathan and Iakoucheva, Lilia M. et al.},
+    year={2020}
+```
+
+```
+@article{rehmat_farooq_kumar_ul hussain_naveed_2020, 
+    title={Predicting the pathogenicity of protein coding mutations using Natural Language Processing},
+    DOI={10.1109/embc44109.2020.9175781},
+    journal={2020 42nd Annual International Conference of the IEEE Engineering in Medicine & Biology Society (EMBC)},
+    author={Rehmat, Naeem and Farooq, Hammad and Kumar, Sanjay and ul Hussain, Sibt and Naveed, Hammad},
+    year={2020}
+```
+
+```
+@article{pagel_antaki_lian_mort_cooper_sebat_iakoucheva_mooney_radivojac_2019,
+    title={Pathogenicity and functional impact of non-frameshifting insertion/deletion variation in the human genome},
+    volume={15},
+    DOI={10.1371/journal.pcbi.1007112},
+    number={6},
+    journal={PLOS Computational Biology},
+    author={Pagel, Kymberleigh A. and Antaki, Danny and Lian, AoJie and Mort, Matthew and Cooper, David N. and Sebat, Jonathan and Iakoucheva, Lilia M. and Mooney, Sean D. and Radivojac, Predrag},
+    year={2019},
+    pages={e1007112}
+```
