@@ -20,8 +20,7 @@ setup(
     'torch>=1.6',
     'mdtraj>=1.8',
     'tqdm',
-    'alphafold2-pytorch',
-    'geometric-vector-perceptron'
+    'alphafold2-pytorch'
   ],
   setup_requires=[
     'pytest-runner',
