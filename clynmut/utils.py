@@ -6,18 +6,23 @@ from einops import rearrange
 
 # data
 import sidechainnet as scn
-from sidechainnet.sequence.utils import VOCAB
+from sidechainnet.utils.sequence import VOCAB
 from sidechainnet.structure.build_info import NUM_COORDS_PER_RES
 
 # models
-from alphafold2_pytorch.utils import *
+# from alphafold2_pytorch.utils import *
 
 
 # Constants / Config
 PADDING_TOKEN = "_"
-FEATURES = "esm" # one of ["esm", "msa", None]
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "CPU") 
+FEATURES = None # one of ["esm", "msa", None]
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu") 
 SAVE_DIR = ""
+
+
+#######################
+### PRE-MODEL UTILS ###
+#######################
 
 
 # set emebdder model from esm if appropiate - Load ESM-1b model
@@ -62,6 +67,40 @@ def get_esm_embedd(seq):
     return results["representations"][33].to(DEVICE)
 
 
+########################
+### POST-MODEL UTILS ###
+########################
+
+def hier_softmax(true_dict, pred_dict, hier_graph=None, weight_mode=None, criterion=None):
+    """ Returns weighted softmax loss for hierarchical clf results. 
+        Inputs:
+        * true_dict: dict containing pairs of (classes, preds) for every level
+        * pred_dict: dict containing pairs of (classes, preds) for every level
+        * hier_graph: dict specifying relations between classes. not used for now
+        * weight_mode: defaults to 1/(1+depth)
+        * loss: torch.nn.CrossEntropyLoss instance
+    """
+    loss = 0.
+    # select the first level, then go down hierarchical tree
+    level = 0
+    next_key = True
+    level_pred_dict = pred_dict
+    level_true_dict = true_dict
+    while next_key:
+        loss_level =  criterion(level_pred_dict["assign"],
+                                level_true_dict["assign"])
+        loss += loss_level.sum() / (1+level)
+        # select dict of children which contains the same parent class
+        next_key = False
+        for child in level_pred_dict["children"]:
+        	if child["class"] == level_true_dict["class"]:
+        		level_pred_dict = child
+        		next_key = True
+        		break
+        # select target
+        level += 1
+        level_true_dict = level_true_dict["children"][0]
+    return loss
 
 
 

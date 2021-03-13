@@ -1,15 +1,20 @@
+# Author: Eric Alcaide
+import os
+import sys
+sys.path.append("../clynmut")
+
 import torch
 import torch.nn.functional as F
 from einops import rearrange, repeat
 
 # data
 import sidechainnet as scn
-from sidechainnet.sequence.utils import VOCAB
+from sidechainnet.utils.sequence import VOCAB
 from sidechainnet.structure.build_info import NUM_COORDS_PER_RES
 
 # models
 from clynmut.utils import *
-from alphafold2_pytorch.utils import *
+# from alphafold2_pytorch.utils import *
 
 
 class Net_3d(torch.nn.Module):
