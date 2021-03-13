@@ -30,7 +30,7 @@ if FEATURES == "esm":
     BATCH_CONVERTER = alphabet.get_batch_converter()
 
 
-def embedd_batch(seqs):
+def embedd_seq_batch(seqs):
     """ Embedds a batch of sequences into mean of all AA embeddings.
         Inputs:
         * seqs: iterator of strs (batch, seqs)
