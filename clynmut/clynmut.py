@@ -17,6 +17,15 @@ from clynmut.utils import *
 # from alphafold2_pytorch.utils import *
 
 
+# swish activation fallback
+
+class Swish_(nn.Module):
+    def forward(self, x, beta=1.):
+        return beta * x * x.sigmoid()
+
+SiLU = nn.SiLU if hasattr(nn, 'SiLU') else Swish_
+
+
 class Net_3d(torch.nn.Module):
     """ Gets an embedding from a 3d structure. 
         Not an autoencoder, just a specific encoder for
@@ -78,7 +87,14 @@ class MutPredict(torch.nn.Module):
         # reasoning modules
         self.nlp_mlp = None
         self.struct_mlp = None
-        self.common_mlp = None
+        self.common_mlp = nn.Sequential(
+                              nn.Linear(struct_reason_dim + seq_reason_dim,
+                                        struct_reason_dim + seq_reason_dim),
+                              nn.Dropout(self.dropout[-1]),
+                              SiLU(),
+                              nn.Linear(struct_reason_dim + seq_reason_dim, 
+                                        struct_reason_dim + seq_reason_dim),
+                          )
         # classifier
         self.hier_clf = Hier_CLF(hier_graph)
         return

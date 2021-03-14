@@ -1,7 +1,7 @@
 ```
 Sequence -----------+--> 3D_structure --> 3D_module --+                                      +--> ?
 |                   |                                 |                                      +--> ?
-|                   |                                 +--> Joint_module --> Hierarchical CLF +--> ?
+|                   |                                 +--> Joint_module --> Hierarchical_CLF +--> ?
 |                   |                                 |                                      +--> ?
 +-> NLP_embeddings -+-------> Embedding_module -------+                                      +--> ?
 ```
