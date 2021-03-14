@@ -16,12 +16,10 @@ from clynmut.utils import *
 def test_hier_softmax():
     criterion = torch.nn.CrossEntropyLoss()
     true_dict = {"class": "all",
-                 "classes": ["class_1", "class_2", "class_3"], 
                  "assign": torch.tensor([1]),
                  "children": [
                   {
                    "class": "class_2",
-                   "classes": ["class_21", "class_22", "class_23"], 
                    "assign": torch.tensor([2]),
                    "children" : {}
                   },]
@@ -42,56 +40,43 @@ def test_hier_softmax():
                 }
 
     hier_graph = {"class": "all",
-                  "classes": ["class_1", "class_2", "class_3"], 
                   "children": [
                    {
                     "class": "class_1",
-                    "classes": ["class_11", "class_12", "class_13"], 
                     "children": [
                      {"class": "class_11", 
-                      "classes": [],
                       "children": []
                      },
                      {"class": "class_12", 
-                      "classes": [],
                       "children": []
                      },
                      {"class": "class_13", 
-                      "classes": [],
                       "children": []
                      },]
                    },
                    {
                    	"class": "class_2",
-                    "classes": ["class_21", "class_22", "class_23"], 
                     "children": [
                      {"class": "class_21", 
-                      "classes": [],
                       "children": []
                      },
                      {"class": "class_22", 
-                      "classes": [],
                       "children": []
                      },
                      {"class": "class_23", 
-                      "classes": [],
                       "children": []
                      },]
                    },
                    {
                    	"class": "class_3",
-                    "classes": ["class_31", "class_32", "class_33"], 
                     "children": [
                      {"class": "class_31", 
-                      "classes": [],
                       "children": []
                      },
                      {"class": "class_32", 
-                      "classes": [],
                       "children": []
                      },
                      {"class": "class_33", 
-                      "classes": [],
                       "children": []
                      },]
                    },
@@ -99,7 +84,8 @@ def test_hier_softmax():
 
     res = hier_softmax(true_dict, pred_dict, hier_graph=hier_graph,
     										 weight_mode=None,
-    										 criterion=criterion)
+    										 criterion=criterion,
+    										 verbose=1)
     assert list(res.shape) == []
 
 if __name__ == "__main__":

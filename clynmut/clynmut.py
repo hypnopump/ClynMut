@@ -36,12 +36,15 @@ class Hier_CLF(torch.nn.Module):
     """ Hierarchical classification module. """
     def __init__(self, hier_graph={}):
         self.hier_graph = hier_graph
-        self.arch = None
-        return
+        self.hier_scaff = Hier_Helper(hier_graph)
+        self.arch = []
 
     def forward(self, x):
-        """ Gets an embedding from a 3d structure. """
-        pred_dict = None
+        """ The custom architecture for a hierarchical classification.
+            Defines the MLPs and final gaussian processes for each node.
+        """
+        full_pred = self.hier_scaff.dag(x, self.arch)
+        pred_dict = self.hier_scaff.full2dict(full_pred)
         return pred_dict
 
 
@@ -102,7 +105,7 @@ class MutPredict(torch.nn.Module):
         # reason the embedding
         scaffold[:, :-self.struct_reason_dim] = self.nlp_mlp(seq_embedds)
 
-        # 3D:
+        # 3D
         # only do if passed
         if coords is not None and cloud_mask is not None:
             struct_embedds = self.struct_embedder(coords, cloud_mask)

@@ -67,11 +67,65 @@ def get_esm_embedd(seq):
     return results["representations"][33].to(DEVICE)
 
 
+#######################
+##### MODEL UTILS #####
+#######################
+
+class Hier_Helper():
+    def __init__(self, hier_graph):
+        """ Helper class for Hierarchical classification. 
+            Builds a DAG given a hierarchical graph. 
+        """
+        self.hier_graph = hier_graph
+        self.nodes = self.build_graph(hier_graph)
+        self.max_width = max([len(node["children"]) for node in self.nodes])
+        # easy access
+        self.idx2class = {node["idx"]: node["class"] for node in self.nodes}
+        self.class2idx = {v:k for k,v in self.idx2class.items()} 
+
+    def build_graph(self, hier_graph):
+        """ Builds the nodes iteratively in BFS fashion. """
+        node_list = []
+        frontier = [hier_graph]
+        while len(frontier) > 0:
+            node, frontier = frontier[0], frontier[1:]
+            # build node
+            node_attrs = {"parent_idx": None,
+                          "idx": len(node_list),
+                          "class": node["class"],
+                          "children": [xi["class"] for xi in node["children"]],
+                          "children_idxs": []}
+            # special properties
+            node_attrs["root"] = node_attrs["idx"] == 0
+            node_attrs["terminal"] = len(node_attrs["children"]) == 0
+            # add to tracker
+            node_list.append(node_attrs)
+        # updates nodes to include idxs of children and parent node
+        for i, node in enumerate(node_list):
+            if not node["root"]:
+                children_idxs = []
+                for j in range(len(node_list)):
+                    # find parent node
+                    if node["class"] == node_list[j]["children"]:
+                        parent = j 
+                    # find idxs of children
+                    if node_list[j]["class"] in node["children"]:
+                        children_idxs.append(j)
+
+        return node_list 
+
+    def dag(self, x, model_dict={}):
+        device = x.device
+        return torch.zeros(x.shape[0], len(self.nodes), self.max_width).to(device)
+
+
 ########################
 ### POST-MODEL UTILS ###
 ########################
 
-def hier_softmax(true_dict, pred_dict, hier_graph=None, weight_mode=None, criterion=None):
+def hier_softmax(true_dict, pred_dict,
+                 hier_graph=None, weight_mode=None, 
+                 criterion=None, verbose=0):
     """ Returns weighted softmax loss for hierarchical clf results. 
         Inputs:
         * true_dict: dict containing pairs of (classes, preds) for every level
@@ -79,6 +133,7 @@ def hier_softmax(true_dict, pred_dict, hier_graph=None, weight_mode=None, criter
         * hier_graph: dict specifying relations between classes. not used for now
         * weight_mode: defaults to 1/(1+depth)
         * loss: torch.nn.CrossEntropyLoss instance
+        * verbose: 0 for silent, 1 for full verbosity
     """
     loss = 0.
     # select the first level, then go down hierarchical tree
@@ -86,20 +141,31 @@ def hier_softmax(true_dict, pred_dict, hier_graph=None, weight_mode=None, criter
     next_key = True
     level_pred_dict = pred_dict
     level_true_dict = true_dict
+    level_hier_graph = hier_graph
     while next_key:
         loss_level =  criterion(level_pred_dict["assign"],
                                 level_true_dict["assign"])
         loss += loss_level.sum() / (1+level)
-        # select dict of children which contains the same parent class
+        # log
+        if verbose: 
+            print("Level {0}, Parent: {1}, Children: {2}, Loss: {3}".format(
+                  level, level_hier_graph["class"],
+                  [xi["class"] for xi in level_hier_graph["children"]], 
+                  loss)
+            )
+        # continue to next level if children or break
         next_key = False
-        for child in level_pred_dict["children"]:
-        	if child["class"] == level_true_dict["class"]:
-        		level_pred_dict = child
-        		next_key = True
-        		break
-        # select target
-        level += 1
-        level_true_dict = level_true_dict["children"][0]
+        if len(level_true_dict["children"]) > 0:
+            level += 1
+            # select children label
+            level_true_dict = level_true_dict["children"][0]
+            # select dict of children / hier_graph which contains the same parent class
+            level_pred_dict = [child for child in level_pred_dict["children"] \
+                               if child["class"] == level_true_dict["class"]][0]
+            level_hier_graph = [child for child in level_hier_graph["children"] \
+                               if child["class"] == level_true_dict["class"]][0]
+            next_key = True
+        
     return loss
 
 
