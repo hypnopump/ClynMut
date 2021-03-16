@@ -14,7 +14,6 @@ import sidechainnet as scn
 from clynmut.utils import *
 
 def test_hier_softmax():
-    criterion = torch.nn.CrossEntropyLoss()
     true_dict = {"class": "all",
                  "assign": torch.tensor([1]),
                  "children": [
@@ -81,10 +80,12 @@ def test_hier_softmax():
                      },]
                    },
                   ]}
+    nodes_list = ["all", "class_1", "class_2", "class_3"]
+    criterions = {node: torch.nn.CrossEntropyLoss() for node in nodes_list}
 
     res = hier_softmax(true_dict, pred_dict, hier_graph=hier_graph,
     										 weight_mode=None,
-    										 criterion=criterion,
+    										 criterions=criterions,
     										 verbose=1)
     assert list(res.shape) == []
 
