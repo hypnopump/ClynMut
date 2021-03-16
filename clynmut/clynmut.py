@@ -121,9 +121,7 @@ class MutPredict(torch.nn.Module):
                               torch.nn.Linear(struct_reason_dim + seq_reason_dim,
                                         struct_reason_dim + seq_reason_dim),
                               torch.nn.Dropout(self.dropout[-1]),
-                              SiLU(),
-                              torch.nn.Linear(struct_reason_dim + seq_reason_dim, 
-                                        struct_reason_dim + seq_reason_dim),
+                              SiLU()
                           )
         # classifier
         self.hier_clf = Hier_CLF(hier_graph, hidden_dim=struct_reason_dim+seq_reason_dim)

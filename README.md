@@ -14,10 +14,15 @@ To be a next-generation DL-based phenotype prediction from genome mutations. Wil
 Planned modules will likely be: 
 * 3D learning module 
 * NLP embeddings
-* Joint module
-* Hierarchical classification 
+* Joint module + Hierarchical classification 
 
 The main idea is for the model to learn the prediction in an end-to-end fashion. 
+
+## Install
+
+```
+$ pip install clynmut
+```
 
 ## Example Usage: 
 
@@ -84,24 +89,6 @@ Or
 $ git clone https://github.com/jonathanking/sidechainnet.git
 $ cd sidechainnet && pip install -e .
 ```
-
-+++
-
-* referenced in <a href="https://ieeexplore.ieee.org/document/9175781/">NLP-SNPPred</a>: 
-    * training:
-        * OncoKB : ()
-    * validation: 
-        * VariBench (three positive/pathogenic datasets: TP53, ClinVar and DoCM)
-        * CIViC (expert-crowd-sourced knowledge base of variants in cancer. We only considered those examples that were labeled as "Likely Pathogenic”, “Poor Outcome” or “Negative”)
-
-* referenced in <a href=https://pdfs.semanticscholar.org/b1c4/31717cf470634bfb5faca0c0ec9d3bd5ec66.pdf>MutPred</a>:
-    * training:
-        * Human Gene Mutation Database (HGMD)
-        * Genome Aggregation Database (gnomAD)
-    * validation:
-        * COSMIC : (Catalogue Of Somatic Mutations In Cancer)
-        * dbCID (DataBase of Cancer Driver InDel) : 
-        * affected by autism pectrum disorder (ASD) from the REACH Project and the Simons Simplex Collection
 
 
 ## Citations:
