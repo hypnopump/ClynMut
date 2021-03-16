@@ -186,7 +186,7 @@ class Hier_Helper():
 ### POST-MODEL UTILS ###
 ########################
 
-def hier_softmax(true_dict=None, true_array=None, pred_dict=None,
+def hier_softmax(true_dict=None, pred_dict=None,
                  hier_graph=None, weight_mode="exp", 
                  criterions=None, verbose=0):
     """ Returns weighted softmax loss for hierarchical clf results. 
@@ -207,8 +207,8 @@ def hier_softmax(true_dict=None, true_array=None, pred_dict=None,
     level_true_dict = true_dict
     level_hier_graph = hier_graph
     while next_key:
-        loss_level = criterion[level_hier_graph["class"]](level_pred_dict["assign"],
-                                                          level_true_dict["assign"])
+        loss_level = criterions[level_hier_graph["class"]](level_pred_dict["assign"],
+                                                           level_true_dict["assign"])
         loss += loss_level.sum() * depth_adj(level)
         # log
         if verbose: 

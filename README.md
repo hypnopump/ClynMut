@@ -28,7 +28,7 @@ from clynmut import *
 hier_graph = {"class": "all", 
               "children": [
                 {"class": "effect_1", "children": [
-                  {"class": "effect_12", "children": []}
+                  {"class": "effect_12", "children": []},
                   {"class": "effect_13", "children": []}
                 ]},
                 {"class": "effect_2", "children": []},
@@ -63,13 +63,13 @@ There are a couple architectures that can be used here. I've been working on 2 o
 
 * [x] A simple custom helper class has been developed for it.
 
-### Testing
+## Testing
 
 ```bash
 $ python setup.py test
 ```
 
-### Datasets: 
+## Datasets: 
 
 This package will use the awesome work by <a href="http://github.com/jonathanking">Jonathan King</a> at <a href="https://github.com/jonathanking/sidechainnet">this repository</a>.
 

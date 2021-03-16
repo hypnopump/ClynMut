@@ -49,7 +49,7 @@ class Hier_CLF(torch.nn.Module):
                                             torch.nn.Linear(dims_in,
                                                             dims_out),
                                             SiLU(),
-                                        )
+                                        ),
                               "clf": torch.nn.Sequential(
                                          torch.nn.Linear(dims_out,
                                                          dims_out)
@@ -64,7 +64,7 @@ class Hier_CLF(torch.nn.Module):
             * pred_format: one of ["dict", "tensor"]
         """
         full_pred = self.hier_scaff.dag(x, self.arch)
-        if pred_format == "dict"
+        if pred_format == "dict":
             pred_dict = self.hier_scaff.full2dict(full_pred)
         return full_pred
 
