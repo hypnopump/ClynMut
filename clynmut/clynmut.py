@@ -1,23 +1,14 @@
 # Author: Eric Alcaide
-import os
-import sys
-sys.path.append("../clynmut")
-
 import torch
 import torch.nn.functional as F
 from einops import rearrange, repeat
-
-# data
-import sidechainnet as scn
-from sidechainnet.utils.sequence import VOCAB
-from sidechainnet.structure.build_info import NUM_COORDS_PER_RES
 
 # models
 from clynmut.utils import *
 # from alphafold2_pytorch.utils import *
 
 
-# e-swish activation fallback
+# (e-)swish activation(s)
 # https://arxiv.org/abs/1801.07145
 
 class e_Swish_(torch.nn.Module):
@@ -65,13 +56,17 @@ class Hier_CLF(torch.nn.Module):
                                          )
                              })
 
-    def forward(self, x):
+    def forward(self, x, pred_format="dict"):
         """ The custom architecture for a hierarchical classification.
             Defines the MLPs and final gaussian processes for each node.
+            Inputs: 
+            * x: (batch, hidden) tensor
+            * pred_format: one of ["dict", "tensor"]
         """
         full_pred = self.hier_scaff.dag(x, self.arch)
-        pred_dict = self.hier_scaff.full2dict(full_pred)
-        return pred_dict
+        if pred_format == "dict"
+            pred_dict = self.hier_scaff.full2dict(full_pred)
+        return full_pred
 
 
 class MutPredict(torch.nn.Module):
@@ -135,12 +130,13 @@ class MutPredict(torch.nn.Module):
         return
 
     def forward(self, seqs, msas=None, coords=None, cloud_mask=None,
-                info=None, verbose=0):
+                pred_format="dict", info=None, verbose=0):
         """ Predicts the mutation effect in a protein. 
             Inputs:
             * seqs: (b,) list of strings. Sequence in 1-letter AA code.
             * msas: (b,) list of outes to msa files .
             * coords: (b, l, c, 3) coords array in sidechainnet format
+            * pred_format: one of ["dict", "tensor"]
             * info: any info required. 
             * verbose: int. verbosity level (0-silent, 1-minimal, 2-full)
         """
@@ -164,7 +160,7 @@ class MutPredict(torch.nn.Module):
 
         # common step
         x = self.common_mlp(scaffold)
-        return self.hier_clf(x)
+        return self.hier_clf(x, pred_format=pred_format)
 
     def __repr__(self):
         return "ClynMut model with following args: "+str(self.__dict__)

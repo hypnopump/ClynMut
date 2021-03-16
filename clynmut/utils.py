@@ -142,9 +142,9 @@ class Hier_Helper():
         return rearrange(stacked, 'nodes b dims -> b nodes dims')
 
     def route2node(self, node_class=None, node_idx=None, return_format="class"):
-        """ Finds the hierarchical route to a given node. 
+        """ Finds the hierarchical route to a given node.
+            Operate with idx, transform to class if not ready 
         """
-        # Operate with idx, transform to class if not ready.
         if node_idx == None:
             node_idx = self.class2idx[node_class]
         # start with node: 
@@ -158,10 +158,10 @@ class Hier_Helper():
         else:
             return route[::-1]
 
-    def full2dict(self, full):
+    def full2dict(self, batch):
         """ Converts a batch of preds into a list of dict preds.
             Inputs: 
-            * full: (bacth, nodes, hidden_dims)
+            * batch: (bacth, nodes, hidden_dims)
             Outputs: list (length=batch) of pred_dicts
         """
         pred_list = []

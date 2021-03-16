@@ -1,10 +1,10 @@
-```
-Sequence -----------+--> 3D_structure --> 3D_module --+                                      +--> ?
-|                   |                                 |                                      +--> ?
-|                   |                                 +--> Joint_module --> Hierarchical_CLF +--> ?
-|                   |                                 |                                      +--> ?
-+-> NLP_embeddings -+-------> Embedding_module -------+                                      +--> ?
-```
+<div style="width:90%; margin-left: auto; margin-right: auto; padding:1em; background-color: rgba(50,50,50,0.3)">
+<b style="color:green">Sequence</b> -----------+--> 3D_structure --> 3D_module --+                                      +--> ?
+<b style="color:green">|</b>                   |                                 |                                      +--> ?
+<b style="color:green">|</b>                   |                                 <b style="color:green">+--> Joint_module --> Hierarchical_CLF +--> ?</b>
+<b style="color:green">|</b>                   |                                 <b style="color:green">|                                      +--> ?</b>
+<b style="color:green">+-> NLP_embeddings -+-------> Embedding_module -------+                                      +--> ?</b>
+</div>
 
 ## ClynMut: Predicting the Clynical Relevance of Genome Mutations (wip)
 
@@ -12,12 +12,44 @@ To be a next-generation DL-based phenotype prediction from genome mutations. Wil
 
 
 Planned modules will likely be: 
-* Standard linear layers
 * 3D learning module 
 * NLP embeddings
-* hierarchical classification (probably gaussian processes, but not sure yet. could do mlps for now as well)
+* Joint module
+* Hierarchical classification 
 
 The main idea is for the model to learn the prediction in an end-to-end fashion. 
+
+## Example Usage: 
+
+```python
+import torch
+from clynmut import *
+
+hier_graph = {"class": "all", 
+              "children": [
+                {"class": "effect_1", "children": [
+                  {"class": "effect_12", "children": []}
+                  {"class": "effect_13", "children": []}
+                ]},
+                {"class": "effect_2", "children": []},
+                {"class": "effect_3", "children": []},
+              ]}
+
+model = MutPredict(
+    seq_embedd_dim = 512,
+    struct_embedd_dim = 256, 
+    seq_reason_dim = 512, 
+    struct_reason_dim = 256,
+    hier_graph = hier_graph,
+    dropout = 0.0,
+    use_msa = False,
+    device = None)
+
+seqs = ["AFTQRWHDLKEIMNIDALTWER",
+        "GHITSMNWILWVYGFLE"]
+
+pred_dicts = model(seqs, pred_format="dict")
+```
 
 
 ## Important topics: 
@@ -29,7 +61,7 @@ There are a couple architectures that can be used here. I've been working on 2 o
 
 ### Hierarchical classification
 
-I'm working on a prototype of a hierarchical classification small library that will support differentiablity.
+* [x] A simple custom helper class has been developed for it.
 
 ### Testing
 
