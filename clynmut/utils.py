@@ -82,6 +82,9 @@ class Hier_Helper():
         # easy access
         self.idx2class = {node["idx"]: node["class"] for node in self.nodes}
         self.class2idx = {v:k for k,v in self.idx2class.items()} 
+        # helpers for node access when deep pos:
+        self.sample_pred = {} # TODO
+        self.idx2route = [self.route2node(i) for i in range(len(self.nodes))]
 
     def build_graph(self, hier_graph):
         """ Builds the nodes iteratively in BFS fashion. """
@@ -111,31 +114,92 @@ class Hier_Helper():
                     # find idxs of children
                     if node_list[j]["class"] in node["children"]:
                         children_idxs.append(j)
+            # update nodes
+            node_list[i]["parent_idx"] = partent
+            node_list[i]["children_idxs"] = children_idxs
 
         return node_list 
 
-    def dag(self, x, model_dict={}):
+    def dag(self, x, model_arch=[]):
+        """ Follows the model architecture in a DAG fashion. 
+            Inputs: 
+            * x: inputs (batch, hidden_dims)
+            * model_arch: model architecture in same order as self.nodes
+            Output: (batch, nodes, hidden_dims)
+        """
         device = x.device
-        return torch.zeros(x.shape[0], len(self.nodes), self.max_width).to(device)
+        collect = []
+        buffer_hidden = {}
+        for i,node in enumerate(self.nodes):
+            # get hidden state for that level and save for later preds
+            hidden = model_arch[i]["hidden"](x)
+            buffer_hidden[node["class"]] = hidden
+            # classify
+            clf = model_arch[i]["clf"](hidden)
+            collect.append(clf)
+            
+        stacked = torch.stack(collect, dim=0).to(device)
+        return rearrange(stacked, 'nodes b dims -> b nodes dims')
+
+    def route2node(self, node_class=None, node_idx=None, return_format="class"):
+        """ Finds the hierarchical route to a given node. 
+        """
+        # Operate with idx, transform to class if not ready.
+        if node_idx == None:
+            node_idx = self.class2idx[node_class]
+        # start with node: 
+        route = [node_idx]
+        while route[-1] != 0:
+            route.append(self.nodes[route[-1]]["parent_idx"])
+
+        # back to class if required. default.
+        if return_format == "class":
+            return [self.idx2class[r] for r in route[::-1]]
+        else:
+            return route[::-1]
+
+    def full2dict(self, full):
+        """ Converts a batch of preds into a list of dict preds.
+            Inputs: 
+            * full: (bacth, nodes, hidden_dims)
+            Outputs: list (length=batch) of pred_dicts
+        """
+        pred_list = []
+        for example in batch:
+            pred_dict = self.sample_pred.copy()
+            for i, node in enumerate(example):
+                # exploit -dict pointing instead of copying- for assigning tensors
+                to_fill_dict = pred_dict
+                # follow route
+                for j,step in enumerate(self.idx2route[i][1:]):
+                        to_fill_dict = to_fill_dict["children"][step]
+                to_fill_dict["assign"] = node
+            # add pred to batch list
+            pred_list.append(pred_dict)
+
+        return pred_list
+
+
 
 
 ########################
 ### POST-MODEL UTILS ###
 ########################
 
-def hier_softmax(true_dict, pred_dict,
-                 hier_graph=None, weight_mode=None, 
-                 criterion=None, verbose=0):
+def hier_softmax(true_dict=None, true_array=None, pred_dict=None,
+                 hier_graph=None, weight_mode="exp", 
+                 criterions=None, verbose=0):
     """ Returns weighted softmax loss for hierarchical clf results. 
         Inputs:
         * true_dict: dict containing pairs of (classes, preds) for every level
         * pred_dict: dict containing pairs of (classes, preds) for every level
         * hier_graph: dict specifying relations between classes. not used for now
-        * weight_mode: defaults to 1/(1+depth)
-        * loss: torch.nn.CrossEntropyLoss instance
+        * weight_mode: "div" for 1/(1+depth) or "exp" for 1/(2**depth)
+        * criterions: list of torch.nn.CrossEntropyLoss instances
         * verbose: 0 for silent, 1 for full verbosity
     """
     loss = 0.
+    depth_adj = lambda x: 1/(1+x)if weight_mode == "div" else 1/2**x 
     # select the first level, then go down hierarchical tree
     level = 0
     next_key = True
@@ -143,9 +207,9 @@ def hier_softmax(true_dict, pred_dict,
     level_true_dict = true_dict
     level_hier_graph = hier_graph
     while next_key:
-        loss_level =  criterion(level_pred_dict["assign"],
-                                level_true_dict["assign"])
-        loss += loss_level.sum() / (1+level)
+        loss_level = criterion[level_hier_graph["class"]](level_pred_dict["assign"],
+                                                          level_true_dict["assign"])
+        loss += loss_level.sum() * depth_adj(level)
         # log
         if verbose: 
             print("Level {0}, Parent: {1}, Children: {2}, Loss: {3}".format(

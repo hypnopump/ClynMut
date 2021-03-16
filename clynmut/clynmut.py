@@ -17,13 +17,14 @@ from clynmut.utils import *
 # from alphafold2_pytorch.utils import *
 
 
-# swish activation fallback
+# e-swish activation fallback
+# https://arxiv.org/abs/1801.07145
 
-class Swish_(nn.Module):
+class e_Swish_(torch.nn.Module):
     def forward(self, x, beta=1.):
         return beta * x * x.sigmoid()
 
-SiLU = nn.SiLU if hasattr(nn, 'SiLU') else Swish_
+SiLU = e_Swish_
 
 
 class Net_3d(torch.nn.Module):
@@ -43,10 +44,26 @@ class Net_3d(torch.nn.Module):
 
 class Hier_CLF(torch.nn.Module):
     """ Hierarchical classification module. """
-    def __init__(self, hier_graph={}):
+    def __init__(self, hier_graph={}, hidden_dim=None):
         self.hier_graph = hier_graph
         self.hier_scaff = Hier_Helper(hier_graph)
+        self.hidden_dim = hidden_dim
         self.arch = []
+        # build node MLPs
+        for i,node in enumerate(self.hier_scaff.nodes):
+            dims_in = self.hier_scaf.max_width if i!=0 else self.hidden_dim
+            dims_out = self.hier_scaf.max_width
+            self.arch.append({"class": node["class"],
+                              "hidden": torch.nn.Sequential(
+                                            torch.nn.Linear(dims_in,
+                                                            dims_out),
+                                            SiLU(),
+                                        )
+                              "clf": torch.nn.Sequential(
+                                         torch.nn.Linear(dims_out,
+                                                         dims_out)
+                                         )
+                             })
 
     def forward(self, x):
         """ The custom architecture for a hierarchical classification.
@@ -85,18 +102,36 @@ class MutPredict(torch.nn.Module):
         # 3d module
         self.struct_embedder = Net_3d()
         # reasoning modules
-        self.nlp_mlp = None
-        self.struct_mlp = None
-        self.common_mlp = nn.Sequential(
-                              nn.Linear(struct_reason_dim + seq_reason_dim,
-                                        struct_reason_dim + seq_reason_dim),
-                              nn.Dropout(self.dropout[-1]),
+        self.nlp_mlp = torch.nn.Sequential(
+                              torch.nn.Linear(seq_embedd_dim,
+                                              seq_reason_dim*2),
+                              torch.nn.Dropout(self.dropout[0]),
                               SiLU(),
-                              nn.Linear(struct_reason_dim + seq_reason_dim, 
+                              torch.nn.Linear(seq_reason_dim * 2, 
+                                              seq_reason_dim),
+                              torch.nn.Dropout(self.dropout[0]),
+                              SiLU(),
+                          )
+        self.struct_mlp = torch.nn.Sequential(
+                              torch.nn.Linear(struct_reason_dim,
+                                        struct_reason_dim*2),
+                              torch.nn.Dropout(self.dropout[1]),
+                              SiLU(),
+                              torch.nn.Linear(struct_reason_dim * 2, 
+                                              struct_reason_dim),
+                              torch.nn.Dropout(self.dropout[1]),
+                              SiLU(),
+                          )
+        self.common_mlp = torch.nn.Sequential(
+                              torch.nn.Linear(struct_reason_dim + seq_reason_dim,
+                                        struct_reason_dim + seq_reason_dim),
+                              torch.nn.Dropout(self.dropout[-1]),
+                              SiLU(),
+                              torch.nn.Linear(struct_reason_dim + seq_reason_dim, 
                                         struct_reason_dim + seq_reason_dim),
                           )
         # classifier
-        self.hier_clf = Hier_CLF(hier_graph)
+        self.hier_clf = Hier_CLF(hier_graph, hidden_dim=struct_reason_dim+seq_reason_dim)
         return
 
     def forward(self, seqs, msas=None, coords=None, cloud_mask=None,

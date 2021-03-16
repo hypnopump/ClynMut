@@ -21,7 +21,7 @@ def test_hier_softmax():
                   {
                    "class": "class_2",
                    "assign": torch.tensor([2]),
-                   "children" : {}
+                   "children" : []
                   },]
                 }
     pred_dict = {"class": "all", 
@@ -30,12 +30,12 @@ def test_hier_softmax():
                   {
                    "class": "class_2",
                    "assign": torch.tensor([[0.25, 0.2, 0.55]]),
-                   "children" : {}
+                   "children" : []
                   },
                   {
                    "class": "class_1",
                    "assign": torch.tensor([[0., 0., 1.]]),
-                   "children" : {}
+                   "children" : []
                   },]
                 }
 
