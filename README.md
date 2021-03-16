@@ -1,10 +1,10 @@
-<div style="width:90%; margin-left: auto; margin-right: auto; padding:1em; background-color: rgba(50,50,50,0.3)">
-<b style="color:green">Sequence</b> -----------+--> 3D_structure --> 3D_module --+                                      +--> ?
-<b style="color:green">|</b>                   |                                 |                                      +--> ?
-<b style="color:green">|</b>                   |                                 <b style="color:green">+--> Joint_module --> Hierarchical_CLF +--> ?</b>
-<b style="color:green">|</b>                   |                                 <b style="color:green">|                                      +--> ?</b>
-<b style="color:green">+-> NLP_embeddings -+-------> Embedding_module -------+                                      +--> ?</b>
-</div>
+```
+Sequence -----------+--> 3D_structure --> 3D_module --+                                      +--> ?
+|                   |                                 |                                      +--> ?
+|                   |                                 +--> Joint_module --> Hierarchical_CLF +--> ?
+|                   |                                 |                                      +--> ?
++-> NLP_embeddings -+-------> Embedding_module -------+                                      +--> ?
+```
 
 ## ClynMut: Predicting the Clynical Relevance of Genome Mutations (wip)
 
