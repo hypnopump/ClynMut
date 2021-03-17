@@ -98,7 +98,7 @@ class MutPredict(torch.nn.Module):
         self.struct_embedder = Net_3d()
         # reasoning modules
         self.nlp_mlp = torch.nn.Sequential(
-                              torch.nn.Linear(seq_embedd_dim,
+                              torch.nn.Linear(2*seq_embedd_dim,
                                               seq_reason_dim*2),
                               torch.nn.Dropout(self.dropout[0]),
                               SiLU(),
@@ -131,9 +131,11 @@ class MutPredict(torch.nn.Module):
                 pred_format="dict", info=None, verbose=0):
         """ Predicts the mutation effect in a protein. 
             Inputs:
-            * seqs: (b,) list of strings. Sequence in 1-letter AA code.
-            * msas: (b,) list of outes to msa files .
+            * seqs: (2, b) list of pairs (wt and mut) of strings.
+                    Sequences in 1-letter AA code.
+            * msas: (2, b) list of pairs (wt and mut) of routes to msa files .
             * coords: (b, l, c, 3) coords array in sidechainnet format
+            * cloud_mask: (b, l, c) boolean mask on actual points from coords
             * pred_format: one of ["dict", "tensor"]
             * info: any info required. 
             * verbose: int. verbosity level (0-silent, 1-minimal, 2-full)
@@ -143,11 +145,15 @@ class MutPredict(torch.nn.Module):
         # NLP
         # MSATransformer if possible
         if msas is not None:
-            seq_embedds = self.msa_embedder(msas)
+            wt_seq_embedds = self.msa_embedder(msas[0])
+            mut_seq_embedds = self.msa_embedder(msas[1])
         # ESM1b if no MSA
         else:
-            seq_embedds = self.seq_embedder(seqs) # (batch, embedd_size)
+            wt_seq_embedds = self.seq_embedder(seqs[0]) # (batch, embedd_size)
+            mut_seq_embedds = self.seq_embedder(seqs[1]) # (batch, embedd_size)
+
         # reason the embedding
+        seq_embedds = torch.cat([wt_seq_embedds, mut_seq_embedds], dim=-1)
         scaffold[:, :-self.struct_reason_dim] = self.nlp_mlp(seq_embedds)
 
         # 3D

@@ -48,7 +48,8 @@ model = MutPredict(
     hier_graph = hier_graph,
     dropout = 0.0,
     use_msa = False,
-    device = None)
+    device = None
+)
 
 seqs = ["AFTQRWHDLKEIMNIDALTWER",
         "GHITSMNWILWVYGFLE"]
