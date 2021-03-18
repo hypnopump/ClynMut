@@ -19,6 +19,7 @@ setup(
     'numpy',
     'torch>=1.6',
     'mdtraj>=1.8',
+    'sidechainnet'
     'tqdm',
     'alphafold2-pytorch'
   ],
