@@ -20,7 +20,7 @@ setup(
     'torch>=1.6',
     'mdtraj>=1.8',
     'sidechainnet',
-    'proDy'
+    'proDy',
     'tqdm',
     'alphafold2-pytorch'
   ],
