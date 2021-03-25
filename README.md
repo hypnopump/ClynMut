@@ -6,7 +6,7 @@ Sequence -----------+--> 3D_structure --> 3D_module --+                         
 +-> NLP_embeddings -+-------> Embedding_module -------+                                      +--> ?
 ```
 
-## ClynMut: Predicting the Clynical Relevance of Genome Mutations (wip)
+## ClynMut: Predicting the Clinical Relevance of Genome Mutations (wip)
 
 To be a next-generation DL-based phenotype prediction from genome mutations. Will use sota NLP and structural techniques. 
 
