@@ -5,7 +5,7 @@ from einops import rearrange, repeat
 
 # models
 from clynmut.utils import *
-# from alphafold2_pytorch.utils import *
+from alphafold2_pytorch.utils import *
 
 
 # (e-)swish activation(s)
