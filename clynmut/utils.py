@@ -10,7 +10,7 @@ from sidechainnet.utils.sequence import VOCAB
 from sidechainnet.structure.build_info import NUM_COORDS_PER_RES
 
 # models
-# from alphafold2_pytorch.utils import *
+import alphafold2_pytorch.utils as af2utils
 
 
 # Constants / Config
@@ -25,30 +25,21 @@ SAVE_DIR = ""
 #######################
 
 
-# set emebdder model from esm if appropiate - Load ESM-1b model
-if FEATURES == "esm":
-    # from pytorch hub (almost 30gb)
-    EMBEDD_MODEL, ALPHABET = torch.hub.load("facebookresearch/esm", "esm1b_t33_650M_UR50S")
-    ##  alternatively do
-    # import esm # after installing esm
-    # model, alphabet = esm.pretrained.esm1b_t33_650M_UR50S()
-    BATCH_CONVERTER = alphabet.get_batch_converter()
-
-
-def embedd_seq_batch(seqs):
+def embedd_seq_batch(seqs, msa_data=None, embedd_model=None, batch_converter=None):
     """ Embedds a batch of sequences into mean of all AA embeddings.
         Inputs:
         * seqs: iterator of strs (batch, seqs)
         Outputs: float tensor of size (batch, embedd_dims)
     """
     embedd_list = []
-    for seq in seqs:
+    for i,seq in enumerate(seqs):
         seq_pure = seq.rstrip(PADDING_TOKEN)
-        embedd = 
+        msa_pure = [msa_data[i]] if msa_data is not None else None
         # take mean
-        embedd_list.append( get_esm_embedd(seq_pure, embedd_model=EMBEDD_MODEL, 
-                                                     batch_converter=BATCH_CONVERTER, 
-                                                     embedd_type="mean"))
+        embedd_list.append( af2utils.get_esm_embedd(seq_pure, msa_data=msa_pure,
+                                                              embedd_model=EMBEDD_MODEL, 
+                                                              batch_converter=BATCH_CONVERTER, 
+                                                              embedd_type="mean"))
     return torch.stack(embedd_list, dim=0).to(DEVICE)
 
 

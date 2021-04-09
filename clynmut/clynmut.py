@@ -5,14 +5,15 @@ from einops import rearrange, repeat
 
 # models
 from clynmut.utils import *
-from alphafold2_pytorch.utils import *
+import alphafold2_pytorch.utils as af2utils
+# import esm # after installing esm
 
 
 # (e-)swish activation(s)
 # https://arxiv.org/abs/1801.07145
 
 class e_Swish_(torch.nn.Module):
-    def forward(self, x, beta=1.):
+    def forward(self, x, beta=1.1):
         return beta * x * x.sigmoid()
 
 SiLU = e_Swish_
@@ -22,7 +23,7 @@ class Net_3d(torch.nn.Module):
     """ Gets an embedding from a 3d structure. 
         Not an autoencoder, just a specific encoder for
         this usecase.
-        Will likely use GVP:
+        Will likely use GVP or E(n)-GNN:
         https://github.com/lucidrains/geometric-vector-perceptron/ 
     """
     def __init__(self):
@@ -34,7 +35,7 @@ class Net_3d(torch.nn.Module):
 
 
 class Hier_CLF(torch.nn.Module):
-    """ Hierarchical classification module. """
+    """ Hierarchical classification/regression module. """
     def __init__(self, hier_graph={}, hidden_dim=None):
         self.hier_graph = hier_graph
         self.hier_scaff = Hier_Helper(hier_graph)
@@ -71,13 +72,14 @@ class Hier_CLF(torch.nn.Module):
 
 class MutPredict(torch.nn.Module):
     def __init__(self,
-                 seq_embedd_dim = 512,
+                 seq_embedd_dim = 1280, # 
                  struct_embedd_dim = 256, 
-                 seq_reason_dim = 512, 
-                 struct_reason_dim = 256,
+                 seq_reason_dim = 128, 
+                 struct_reason_dim = 128,
                  hier_graph = {},
                  dropout = 0.0,
                  use_msa = False,
+                 msa_max_seq = 256, # max number of MSA sequences to read.
                  device = None):
         """ Predicts the phenotypical impact of mutations. """
         self.seq_embedd_dim = seq_embedd_dim
@@ -88,12 +90,25 @@ class MutPredict(torch.nn.Module):
         self.dropout = [dropout]*3 if isinstance(dropout, float) else dropout
         self.hier_graph = hier_graph
 
-        # nlp arch
+        # nlp arch - no gradients here
         self.use_msa = use_msa
+        self.msa_max_seq = msa_max_seq
         if use_msa:
-            self.msa_embedder = embedd_msa_batch
+            ##  alternatively do
+            # import esm # after installing esm
+            # embedd_model, alphabet = esm.pretrained.esm1b_t33_650M_UR50S()
+            embedd_model, alphabet = torch.hub.load("facebookresearch/esm", "esm1b_t33_650M_UR50S")
+            batch_converter = alphabet.get_batch_converter()
         else:
-            self.seq_embedder = embedd_seq_batch
+            ##  alternatively do
+            # embedd_model, alphabet = esm.pretrained.esm_msa1_t12_100M_UR50S()
+            embedd_model, alphabet = torch.hub.load("facebookresearch/esm", "esm_msa1_t12_100M_UR50S") 
+            batch_converter = alphabet.get_batch_converter()
+
+        self.nlp_stuff = [embedd_model, alphabet, batch_converter]
+        self.seq_embedder = partial(embedd_seq_batch,
+                                    embedd_model=embedd_model, batch_converter=batch_converter)
+
         # 3d module
         self.struct_embedder = Net_3d()
         # reasoning modules
@@ -127,7 +142,7 @@ class MutPredict(torch.nn.Module):
         self.hier_clf = Hier_CLF(hier_graph, hidden_dim=struct_reason_dim+seq_reason_dim)
         return
 
-    def forward(self, seqs, msas=None, coords=None, cloud_mask=None,
+    def forward(self, seqs, msa_routes=None, coords=None, cloud_mask=None,
                 pred_format="dict", info=None, verbose=0):
         """ Predicts the mutation effect in a protein. 
             Inputs:
@@ -145,12 +160,15 @@ class MutPredict(torch.nn.Module):
         # NLP
         # MSATransformer if possible
         if msas is not None:
-            wt_seq_embedds = self.msa_embedder(msas[0])
-            mut_seq_embedds = self.msa_embedder(msas[1])
-        # ESM1b if no MSA
-        else:
-            wt_seq_embedds = self.seq_embedder(seqs[0]) # (batch, embedd_size)
-            mut_seq_embedds = self.seq_embedder(seqs[1]) # (batch, embedd_size)
+            wt_seq_data = [ af2utils.read_msa( filename=msa_route, nseq=self.msa_max_seq ) \
+                            for msa_route in msa_routes[0]]
+            mut_seq_data = [ af2utils.read_msa( filename=msa_route, nseq=self.msa_max_seq ) \
+                             for msa_route in msa_routes[1]]
+        else: 
+            wt_seq_data, mut_seq_data = None, None
+
+        wt_seq_embedds = self.seq_embedder(seqs[0], wt_seq_data) # (batch, embedd_size)
+        mut_seq_embedds = self.seq_embedder(seqs[1], mut_seq_data) # (batch, embedd_size)
 
         # reason the embedding
         seq_embedds = torch.cat([wt_seq_embedds, mut_seq_embedds], dim=-1)
